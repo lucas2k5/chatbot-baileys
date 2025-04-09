@@ -1,0 +1,24 @@
+{
+    "name": "baileys-whatsapp-bot",
+    "version": "1.0.0",
+    "description": "Chatbot WhatsApp usando Baileys com sessão segura",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "keywords": [
+        "whatsapp",
+        "baileys",
+        "chatbot",
+        "nodejs"
+    ],
+    "author": "Lucas Fernandes",
+    "license": "MIT",
+    "dependencies": {
+        "@whiskeysockets/baileys": "^6.17.16",
+        "moment-timezone": "^0.5.48",
+        "pino": "^8.21.0",
+        "qrcode-terminal": "^0.12.0"
+    }
+}

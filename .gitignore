@@ -1,0 +1,8 @@
+# Ignora arquivos temporários e de sistema
+node_modules/
+.env
+.DS_Store
+npm-debug.log
+
+# NÃO ignore a pasta de sessões
+# /sessions  <- isso aqui NÃO deve estar!
