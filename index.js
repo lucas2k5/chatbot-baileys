@@ -8,11 +8,11 @@ import pino from 'pino';
 import moment from 'moment-timezone';
 import fs from 'fs';
 
-// Mapa de interações
+// Mapas de controle de interações
 const lastInteraction = new Map();
 const pendingReminders = new Map();
 
-// Variável global para o socket
+// Variável global do socket
 let sock;
 
 const startSock = async () => {
@@ -22,8 +22,8 @@ const startSock = async () => {
 
     sock = makeWASocket({
         auth: state,
-        printQRInTerminal: true,
-        logger: pino({ level: 'info' }) // Ativa logs
+        printQRInTerminal: false,
+        logger: pino({ level: 'info' })
     });
 
     console.log('📡 Socket criado.');
@@ -34,7 +34,8 @@ const startSock = async () => {
         const { connection, lastDisconnect, qr } = update;
 
         if (qr) {
-            console.log('📲 Escaneie o QR Code exibido no terminal.');
+            console.log('\n📲 Escaneie o QR code acessando o link abaixo:\n');
+            console.log(`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qr)}&size=300x300`);
         }
 
         if (connection === 'connecting') {
@@ -48,28 +49,24 @@ const startSock = async () => {
         }
     });
 
-    // Mensagem recebida
     sock.ev.on('messages.upsert', async ({ messages }) => {
         const msg = messages[0];
         if (!msg.message || msg.key.fromMe) return;
 
         const from = msg.key.remoteJid;
         const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text || "";
+        const nome = msg.pushName || "cliente";
 
         lastInteraction.set(from, moment().tz('America/Sao_Paulo'));
         pendingReminders.delete(from);
-
-        const nome = msg.pushName || "cliente";
 
         if (/menu|oi|olá|ola|bom dia|boa/i.test(body)) {
             await sock.sendMessage(from, {
                 text: `Olá, ${nome.split(" ")[0]}! 👋 A *Barão Parts* agradece seu contato!\n\nEscolha abaixo o tipo de veículo para o qual você deseja peças:\n\n1 - Trator\n2 - Ônibus\n3 - Marruá\n4 - Caminhão\n5 - Gerador\n6 - Outras perguntas`
             });
 
-            if (!pendingReminders.has(from)) {
-                const reminderTime = moment().tz('America/Sao_Paulo').add(3, 'hours');
-                pendingReminders.set(from, reminderTime);
-            }
+            const reminderTime = moment().tz('America/Sao_Paulo').add(3, 'hours');
+            pendingReminders.set(from, reminderTime);
         }
 
         if (['1', '2', '3', '4', '5', '6'].includes(body.trim())) {
@@ -98,7 +95,7 @@ const startSock = async () => {
     return sock;
 };
 
-// Verifica lembretes e inatividade a cada 1 hora
+// Verifica lembretes e inatividade a cada hora
 setInterval(async () => {
     if (!sock) return;
 
@@ -124,5 +121,5 @@ setInterval(async () => {
     }
 }, 1000 * 60 * 60); // a cada hora
 
-// Inicia
+// Inicia o bot
 startSock();
